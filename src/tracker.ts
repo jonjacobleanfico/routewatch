@@ -2,7 +2,7 @@ export interface RouteHit {
   method: string;
   path: string;
   statusCode: number;
-  responseTimeMs: number;
+  durationMs: number;
   timestamp: Date;
 }
 
@@ -10,45 +10,38 @@ export interface RouteStats {
   method: string;
   path: string;
   hitCount: number;
-  avgResponseTimeMs: number;
-  lastHit: Date;
-  statusCodes: Record<number, number>;
+  avgDurationMs?: number;
+  lastHitAt?: Date;
 }
 
-const routeHits: RouteHit[] = [];
+const hitMap = new Map<string, RouteHit[]>();
 
 export function recordHit(hit: RouteHit): void {
-  routeHits.push(hit);
+  const key = `${hit.method}:${hit.path}`;
+  const existing = hitMap.get(key) ?? [];
+  existing.push(hit);
+  hitMap.set(key, existing);
 }
 
 export function getStats(): RouteStats[] {
-  const statsMap = new Map<string, RouteStats>();
+  const stats: RouteStats[] = [];
 
-  for (const hit of routeHits) {
-    const key = `${hit.method}:${hit.path}`;
+  for (const [key, hits] of hitMap.entries()) {
+    const [method, ...pathParts] = key.split(':');
+    const path = pathParts.join(':');
+    const hitCount = hits.length;
+    const avgDurationMs =
+      hits.reduce((sum, h) => sum + h.durationMs, 0) / hitCount;
+    const lastHitAt = hits.reduce<Date | undefined>((latest, h) => {
+      return !latest || h.timestamp > latest ? h.timestamp : latest;
+    }, undefined);
 
-    if (!statsMap.has(key)) {
-      statsMap.set(key, {
-        method: hit.method,
-        path: hit.path,
-        hitCount: 0,
-        avgResponseTimeMs: 0,
-        lastHit: hit.timestamp,
-        statusCodes: {},
-      });
-    }
-
-    const stats = statsMap.get(key)!;
-    const prevTotal = stats.avgResponseTimeMs * stats.hitCount;
-    stats.hitCount += 1;
-    stats.avgResponseTimeMs = (prevTotal + hit.responseTimeMs) / stats.hitCount;
-    stats.lastHit = hit.timestamp > stats.lastHit ? hit.timestamp : stats.lastHit;
-    stats.statusCodes[hit.statusCode] = (stats.statusCodes[hit.statusCode] ?? 0) + 1;
+    stats.push({ method, path, hitCount, avgDurationMs, lastHitAt });
   }
 
-  return Array.from(statsMap.values());
+  return stats.sort((a, b) => b.hitCount - a.hitCount);
 }
 
 export function resetStats(): void {
-  routeHits.length = 0;
+  hitMap.clear();
 }
