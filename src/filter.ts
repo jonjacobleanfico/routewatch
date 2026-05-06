@@ -74,3 +74,21 @@ export function sortStats(
     return 0;
   });
 }
+
+/**
+ * Returns the top N route stats entries after sorting.
+ * Useful for quickly identifying the most (or least) active routes.
+ *
+ * @param stats - Array of RouteStats to select from
+ * @param n - Maximum number of entries to return
+ * @param by - Field to sort by before slicing
+ * @param order - Sort order, defaults to 'desc'
+ */
+export function topStats(
+  stats: RouteStats[],
+  n: number,
+  by: 'hits' | 'avgDuration' | 'path' = 'hits',
+  order: 'asc' | 'desc' = 'desc'
+): RouteStats[] {
+  return sortStats(stats, by, order).slice(0, n);
+}
