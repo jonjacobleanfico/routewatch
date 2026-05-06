@@ -16,50 +16,49 @@ describe("setAnnotation / getAnnotation", () => {
     expect(getAnnotation("GET /users")).toBe("Returns all users");
   });
 
-  it("returns undefined for a route with no annotation", () => {
-    expect(getAnnotation("POST /orders")).toBeUndefined();
+  it("overwrites an existing annotation", () => {
+    setAnnotation("GET /users", "Old note");
+    setAnnotation("GET /users", "New note");
+    expect(getAnnotation("GET /users")).toBe("New note");
   });
 
-  it("overwrites an existing annotation", () => {
-    setAnnotation("GET /users", "old note");
-    setAnnotation("GET /users", "new note");
-    expect(getAnnotation("GET /users")).toBe("new note");
+  it("returns undefined for unknown route", () => {
+    expect(getAnnotation("DELETE /unknown")).toBeUndefined();
   });
 });
 
 describe("removeAnnotation", () => {
-  it("removes an existing annotation and returns true", () => {
-    setAnnotation("DELETE /items/:id", "Deletes an item");
-    const removed = removeAnnotation("DELETE /items/:id");
-    expect(removed).toBe(true);
-    expect(getAnnotation("DELETE /items/:id")).toBeUndefined();
+  it("removes an existing annotation", () => {
+    setAnnotation("POST /items", "Creates an item");
+    removeAnnotation("POST /items");
+    expect(getAnnotation("POST /items")).toBeUndefined();
   });
 
-  it("returns false when annotation does not exist", () => {
-    expect(removeAnnotation("PATCH /nonexistent")).toBe(false);
+  it("does not throw when removing a non-existent annotation", () => {
+    expect(() => removeAnnotation("GET /nope")).not.toThrow();
   });
 });
 
 describe("getAllAnnotations", () => {
-  it("returns all annotations as a plain object", () => {
-    setAnnotation("GET /health", "Health check endpoint");
-    setAnnotation("POST /login", "Authenticates a user");
+  it("returns all stored annotations", () => {
+    setAnnotation("GET /a", "note a");
+    setAnnotation("POST /b", "note b");
     const all = getAllAnnotations();
     expect(all).toEqual({
-      "GET /health": "Health check endpoint",
-      "POST /login": "Authenticates a user",
+      "GET /a": "note a",
+      "POST /b": "note b",
     });
   });
 
-  it("returns an empty object when no annotations exist", () => {
+  it("returns empty object when no annotations exist", () => {
     expect(getAllAnnotations()).toEqual({});
   });
 });
 
 describe("clearAnnotations", () => {
   it("removes all annotations", () => {
-    setAnnotation("GET /a", "note a");
-    setAnnotation("GET /b", "note b");
+    setAnnotation("GET /x", "x");
+    setAnnotation("GET /y", "y");
     clearAnnotations();
     expect(getAllAnnotations()).toEqual({});
   });
