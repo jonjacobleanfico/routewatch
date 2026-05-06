@@ -1,13 +1,13 @@
 export { routewatch } from './middleware';
-export { recordHit, getStats, resetStats } from './tracker';
+export { getStats, resetStats, recordHit } from './tracker';
 export { generateReport, formatReportAsTable } from './reporter';
 export { renderHtmlDashboard, dashboardRouter } from './dashboard';
 export { exportStats, exportAsJson, exportAsCsv, exporterRouter } from './exporter';
 export { filterStats, sortStats } from './filter';
-export {
-  evaluateAlerts,
-  getTriggeredAlerts,
-  type AlertRule,
-  type AlertResult,
-} from './alerts';
-export { alertsRouter, addAlertRule, clearAlertRules } from './alertsRouter';
+export { evaluateAlerts, getTriggeredAlerts } from './alerts';
+export { addAlertRule, clearAlertRules } from './alertsRouter';
+export { addRateLimitRule, clearRateLimitRules, getRateLimitRules, evaluateRateLimits } from './rateLimit';
+export { recordForReplay, onReplay, replayHits, getReplayLog, clearReplayLog } from './replay';
+export { addTag, removeTag, getTagsForRoute, getRoutesByTag, getAllTags } from './tags';
+export { takeSnapshot, getSnapshot, listSnapshots, deleteSnapshot, clearSnapshots, diffSnapshots } from './snapshots';
+export { snapshotsRouter } from './snapshotsRouter';
