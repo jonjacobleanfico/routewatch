@@ -41,6 +41,13 @@ export function getErrorSummary(): Record<string, number> {
   return summary;
 }
 
+/**
+ * Returns all error entries whose status code matches the given value.
+ */
+export function getErrorsByStatusCode(statusCode: number): ErrorEntry[] {
+  return errorLog.filter((e) => e.statusCode === statusCode);
+}
+
 export function clearErrorLog(): void {
   errorLog.length = 0;
 }
