@@ -52,6 +52,12 @@ describe('removeTag', () => {
   it('does nothing for an unknown route', () => {
     expect(() => removeTag('/nope', 'auth')).not.toThrow();
   });
+
+  it('does nothing when removing a tag that was never added', () => {
+    addTag('/api/users GET', 'auth');
+    removeTag('/api/users GET', 'nonexistent');
+    expect(getTagsForRoute('/api/users GET')).toEqual(['auth']);
+  });
 });
 
 describe('getRoutesByTag', () => {
@@ -81,5 +87,12 @@ describe('getAllTags', () => {
 
   it('returns empty object when no tags set', () => {
     expect(getAllTags()).toEqual({});
+  });
+
+  it('returns a snapshot that does not reflect subsequent mutations', () => {
+    addTag('/api/users GET', 'auth');
+    const snapshot = getAllTags();
+    addTag('/api/users GET', 'admin');
+    expect(snapshot['/api/users GET']).not.toContain('admin');
   });
 });
