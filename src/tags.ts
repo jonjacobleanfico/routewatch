@@ -59,6 +59,13 @@ export function getAllTags(): Record<string, string[]> {
 }
 
 /**
+ * Check whether a route has a specific tag assigned
+ */
+export function hasTag(route: string, tag: string): boolean {
+  return routeTags.get(route)?.has(tag.trim().toLowerCase()) ?? false;
+}
+
+/**
  * Clear all tag assignments (useful for testing)
  */
 export function clearTags(): void {
