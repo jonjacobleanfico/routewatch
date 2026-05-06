@@ -15,11 +15,20 @@ replayRouter.get('/', (_req: Request, res: Response) => {
 });
 
 // POST /replay/run — replay all (or filtered) hits
+// Body params (optional): { method: string, path: string }
+// If both method and path are provided, only matching hits are replayed.
 replayRouter.post('/run', (req: Request, res: Response) => {
   const { method, path: routePath } = req.body as {
     method?: string;
     path?: string;
   };
+
+  if ((method && !routePath) || (!method && routePath)) {
+    res.status(400).json({
+      error: 'Both "method" and "path" must be provided together, or neither.',
+    });
+    return;
+  }
 
   let replayed;
   if (method && routePath) {
