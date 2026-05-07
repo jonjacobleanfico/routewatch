@@ -36,6 +36,10 @@ const defaultRules: AlertRule[] = [
   },
 ];
 
+/**
+ * Evaluates all alert rules against each route's stats and returns only
+ * the results where a rule was triggered.
+ */
 export function evaluateAlerts(
   statsMap: Record<string, RouteStats>,
   rules: AlertRule[] = defaultRules
@@ -56,6 +60,24 @@ export function evaluateAlerts(
   }
 
   return results.filter((r) => r.triggered);
+}
+
+/**
+ * Returns triggered alerts grouped by rule ID for easier consumption
+ * when summarising alert state across all routes.
+ */
+export function groupAlertsByRule(
+  statsMap: Record<string, RouteStats>,
+  rules?: AlertRule[]
+): Record<string, AlertResult[]> {
+  const triggered = evaluateAlerts(statsMap, rules);
+  return triggered.reduce<Record<string, AlertResult[]>>((acc, result) => {
+    if (!acc[result.ruleId]) {
+      acc[result.ruleId] = [];
+    }
+    acc[result.ruleId].push(result);
+    return acc;
+  }, {});
 }
 
 export function getTriggeredAlerts(
