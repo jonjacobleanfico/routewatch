@@ -48,6 +48,18 @@ export function getErrorsByStatusCode(statusCode: number): ErrorEntry[] {
   return errorLog.filter((e) => e.statusCode === statusCode);
 }
 
+/**
+ * Returns all error entries that occurred within the given time range.
+ * @param from - Start of the range (Unix timestamp in ms, inclusive)
+ * @param to - End of the range (Unix timestamp in ms, inclusive). Defaults to now.
+ */
+export function getErrorsByTimeRange(
+  from: number,
+  to: number = Date.now()
+): ErrorEntry[] {
+  return errorLog.filter((e) => e.timestamp >= from && e.timestamp <= to);
+}
+
 export function clearErrorLog(): void {
   errorLog.length = 0;
 }
