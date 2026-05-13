@@ -1,51 +1,50 @@
-/**
- * routeGroups.ts
- * Group routes under named labels for aggregated stats and organization.
- */
-
-const groupMap = new Map<string, Set<string>>();
+const groupMap: Map<string, Set<string>> = new Map();
+const routeToGroup: Map<string, string> = new Map();
 
 export function routeKey(method: string, path: string): string {
   return `${method.toUpperCase()} ${path}`;
 }
 
-export function addRouteToGroup(groupName: string, method: string, path: string): void {
+export function addRouteToGroup(group: string, method: string, path: string): void {
   const key = routeKey(method, path);
-  if (!groupMap.has(groupName)) {
-    groupMap.set(groupName, new Set());
+  if (!groupMap.has(group)) {
+    groupMap.set(group, new Set());
   }
-  groupMap.get(groupName)!.add(key);
+  groupMap.get(group)!.add(key);
+  routeToGroup.set(key, group);
 }
 
-export function removeRouteFromGroup(groupName: string, method: string, path: string): void {
+export function removeRouteFromGroup(group: string, method: string, path: string): void {
   const key = routeKey(method, path);
-  groupMap.get(groupName)?.delete(key);
+  groupMap.get(group)?.delete(key);
+  if (routeToGroup.get(key) === group) {
+    routeToGroup.delete(key);
+  }
 }
 
-export function getRoutesInGroup(groupName: string): string[] {
-  return Array.from(groupMap.get(groupName) ?? []);
+export function getRoutesInGroup(group: string): string[] {
+  return Array.from(groupMap.get(group) ?? []);
 }
 
 export function getGroupForRoute(method: string, path: string): string | undefined {
-  const key = routeKey(method, path);
-  for (const [group, routes] of groupMap.entries()) {
-    if (routes.has(key)) return group;
-  }
-  return undefined;
+  return routeToGroup.get(routeKey(method, path));
 }
 
-export function getAllGroups(): Record<string, string[]> {
-  const result: Record<string, string[]> = {};
-  for (const [group, routes] of groupMap.entries()) {
-    result[group] = Array.from(routes);
-  }
-  return result;
+export function getAllGroups(): string[] {
+  return Array.from(groupMap.keys());
 }
 
-export function deleteGroup(groupName: string): boolean {
-  return groupMap.delete(groupName);
+export function deleteGroup(group: string): void {
+  const routes = groupMap.get(group);
+  if (routes) {
+    for (const key of routes) {
+      routeToGroup.delete(key);
+    }
+  }
+  groupMap.delete(group);
 }
 
 export function clearAllGroups(): void {
   groupMap.clear();
+  routeToGroup.clear();
 }

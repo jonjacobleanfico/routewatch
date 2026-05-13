@@ -14,9 +14,8 @@ beforeEach(() => {
 });
 
 describe("routeKey", () => {
-  it("formats method and path correctly", () => {
-    expect(routeKey("get", "/users")).toBe("GET /users");
-    expect(routeKey("POST", "/items")).toBe("POST /items");
+  it("normalizes method to uppercase", () => {
+    expect(routeKey("get", "/foo")).toBe("GET /foo");
   });
 });
 
@@ -43,45 +42,52 @@ describe("addRouteToGroup", () => {
 
 describe("removeRouteFromGroup", () => {
   it("removes a route from a group", () => {
-    addRouteToGroup("api", "GET", "/items");
-    removeRouteFromGroup("api", "GET", "/items");
-    expect(getRoutesInGroup("api")).not.toContain("GET /items");
+    addRouteToGroup("auth", "GET", "/login");
+    removeRouteFromGroup("auth", "GET", "/login");
+    expect(getRoutesInGroup("auth")).not.toContain("GET /login");
   });
 
-  it("does nothing for unknown group", () => {
-    expect(() => removeRouteFromGroup("noop", "GET", "/x")).not.toThrow();
+  it("does not throw if route was not in group", () => {
+    expect(() => removeRouteFromGroup("auth", "GET", "/missing")).not.toThrow();
   });
 });
 
 describe("getGroupForRoute", () => {
-  it("returns the group name for a known route", () => {
+  it("returns the group for a known route", () => {
     addRouteToGroup("public", "GET", "/health");
     expect(getGroupForRoute("GET", "/health")).toBe("public");
   });
 
-  it("returns undefined for an unregistered route", () => {
-    expect(getGroupForRoute("DELETE", "/unknown")).toBeUndefined();
+  it("returns undefined for unknown route", () => {
+    expect(getGroupForRoute("GET", "/unknown")).toBeUndefined();
   });
 });
 
 describe("getAllGroups", () => {
-  it("returns all groups with their routes", () => {
-    addRouteToGroup("admin", "GET", "/admin");
-    addRouteToGroup("public", "GET", "/home");
-    const all = getAllGroups();
-    expect(all["admin"]).toContain("GET /admin");
-    expect(all["public"]).toContain("GET /home");
+  it("returns all group names", () => {
+    addRouteToGroup("a", "GET", "/a");
+    addRouteToGroup("b", "GET", "/b");
+    const groups = getAllGroups();
+    expect(groups).toContain("a");
+    expect(groups).toContain("b");
   });
 });
 
 describe("deleteGroup", () => {
-  it("removes an existing group", () => {
+  it("removes the group and clears route mappings", () => {
     addRouteToGroup("temp", "GET", "/tmp");
-    expect(deleteGroup("temp")).toBe(true);
-    expect(getRoutesInGroup("temp")).toEqual([]);
+    deleteGroup("temp");
+    expect(getAllGroups()).not.toContain("temp");
+    expect(getGroupForRoute("GET", "/tmp")).toBeUndefined();
   });
+});
 
-  it("returns false for a non-existent group", () => {
-    expect(deleteGroup("ghost")).toBe(false);
+describe("clearAllGroups", () => {
+  it("clears all groups and route mappings", () => {
+    addRouteToGroup("x", "GET", "/x");
+    addRouteToGroup("y", "POST", "/y");
+    clearAllGroups();
+    expect(getAllGroups()).toHaveLength(0);
+    expect(getGroupForRoute("GET", "/x")).toBeUndefined();
   });
 });
