@@ -20,7 +20,11 @@ router.get("/route", (req, res) => {
   if (!path) {
     return res.status(400).json({ error: "path query param required" });
   }
-  res.json(getHeaderStats(method, path));
+  const stats = getHeaderStats(method, path);
+  if (!stats) {
+    return res.status(404).json({ error: "no header data found for the given method and path" });
+  }
+  res.json(stats);
 });
 
 // GET /routewatch/headers/top?method=GET&path=/api/foo&header=content-type&limit=5
@@ -32,6 +36,10 @@ router.get("/top", (req, res) => {
 
   if (!path || !header) {
     return res.status(400).json({ error: "path and header query params required" });
+  }
+
+  if (isNaN(limit) || limit < 1) {
+    return res.status(400).json({ error: "limit must be a positive integer" });
   }
 
   res.json(getTopHeaderValues(method, path, header, limit));
