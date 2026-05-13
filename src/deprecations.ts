@@ -66,3 +66,14 @@ export function removeDeprecation(method: string, route: string): void {
 export function clearDeprecations(): void {
   deprecatedRoutes.clear();
 }
+
+/**
+ * Returns all deprecation entries that have been hit at least once,
+ * sorted by hit count in descending order. Useful for identifying
+ * which deprecated routes are still seeing the most traffic.
+ */
+export function getActiveDeprecations(): DeprecationEntry[] {
+  return Array.from(deprecatedRoutes.values())
+    .filter((entry) => entry.hitCount > 0)
+    .sort((a, b) => b.hitCount - a.hitCount);
+}
