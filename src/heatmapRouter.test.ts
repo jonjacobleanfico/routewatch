@@ -36,6 +36,16 @@ describe('GET /_routewatch/heatmap', () => {
     const cell = res.body.cells.find((c: any) => c.day === 1 && c.hour === 10);
     expect(cell.count).toBe(1);
   });
+
+  it('returns maxCount reflecting the highest cell count', async () => {
+    makeHit('/api/users', 0, 8);
+    makeHit('/api/users', 0, 8);
+    makeHit('/api/users', 0, 8);
+    makeHit('/api/users', 1, 9);
+    const res = await request(buildApp()).get('/_routewatch/heatmap?route=/api/users');
+    expect(res.status).toBe(200);
+    expect(res.body.maxCount).toBe(3);
+  });
 });
 
 describe('GET /_routewatch/heatmap/top-hours', () => {
