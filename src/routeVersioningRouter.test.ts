@@ -43,6 +43,13 @@ describe("POST /routewatch/versions", () => {
       .send({ method: "GET" });
     expect(res.status).toBe(400);
   });
+
+  it("returns 400 when body is empty", async () => {
+    const res = await request(buildApp())
+      .post("/routewatch/versions")
+      .send({});
+    expect(res.status).toBe(400);
+  });
 });
 
 describe("GET /routewatch/versions/route", () => {
@@ -56,6 +63,11 @@ describe("GET /routewatch/versions/route", () => {
   it("returns 404 for unknown route", async () => {
     const res = await request(buildApp()).get("/routewatch/versions/route?method=GET&path=/nope");
     expect(res.status).toBe(404);
+  });
+
+  it("returns 400 when query params are missing", async () => {
+    const res = await request(buildApp()).get("/routewatch/versions/route?method=GET");
+    expect(res.status).toBe(400);
   });
 });
 
@@ -81,5 +93,11 @@ describe("GET /routewatch/versions/:version/routes", () => {
     expect(res.status).toBe(200);
     expect(res.body.routes).toContain("GET:/a");
     expect(res.body.routes).toContain("POST:/b");
+  });
+
+  it("returns empty routes array for an unknown version", async () => {
+    const res = await request(buildApp()).get("/routewatch/versions/v99/routes");
+    expect(res.status).toBe(200);
+    expect(res.body.routes).toEqual([]);
   });
 });
