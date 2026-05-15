@@ -37,6 +37,12 @@ router.post('/', (req, res) => {
   if (!method || !path || typeof ttl !== 'number') {
     return res.status(400).json({ error: 'method, path, and ttl are required' });
   }
+  if (ttl <= 0) {
+    return res.status(400).json({ error: 'ttl must be a positive number' });
+  }
+  if (maxSize !== undefined && (typeof maxSize !== 'number' || maxSize <= 0)) {
+    return res.status(400).json({ error: 'maxSize must be a positive number' });
+  }
   const rule: CacheRule = { ttl };
   if (maxSize !== undefined) rule.maxSize = maxSize;
   setCacheRule(method, path, rule);
