@@ -10,6 +10,16 @@ import {
 
 const router = Router();
 
+/**
+ * Extracts the method and path from request params.
+ * The wildcard segment is prefixed with '/' to form a valid route path.
+ */
+function extractMethodAndPath(req: Request): { method: string; path: string } {
+  const method = req.params.method;
+  const path = '/' + (req.params as any)[0];
+  return { method, path };
+}
+
 // GET /routewatch/notes — list all notes
 router.get('/', (_req: Request, res: Response) => {
   res.json(getAllNotes());
@@ -17,15 +27,13 @@ router.get('/', (_req: Request, res: Response) => {
 
 // GET /routewatch/notes/:method/:path — get notes for a specific route
 router.get('/:method/*', (req: Request, res: Response) => {
-  const method = req.params.method;
-  const path = '/' + (req.params as any)[0];
+  const { method, path } = extractMethodAndPath(req);
   res.json(getNotes(method, path));
 });
 
 // POST /routewatch/notes/:method/:path — add a note
 router.post('/:method/*', (req: Request, res: Response) => {
-  const method = req.params.method;
-  const path = '/' + (req.params as any)[0];
+  const { method, path } = extractMethodAndPath(req);
   const { note } = req.body as { note?: string };
   if (!note || typeof note !== 'string') {
     return res.status(400).json({ error: 'note (string) is required' });
